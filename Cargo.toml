@@ -1,0 +1,7 @@
+[package]
+name = "fluid_gdc03"
+version = "0.1.0"
+authors = ["Thomas Cheng <thomascheng1998@googlemail.com>"]
+
+[dependencies]
+glium = "*"
