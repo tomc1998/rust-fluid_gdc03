@@ -59,6 +59,7 @@ fn diffuse(grid: &mut [f32], prev_grid: &mut [f32], grid_w: u32, dt: f32, diff: 
   let a = dt*diff*grid.len() as f32;
   let grid_h = grid.len()/grid_w as usize;
   let iterations = 1;
+  if diff == 0.0 { return; }
   // Iteratively diffuse, solve the linear system to find the next state of the grid
   for _ in 0..iterations {
     for ii in 1..grid_w-1 {
@@ -159,14 +160,14 @@ fn step_dens(dens_grid: &mut [f32], vx_grid: &[f32], vy_grid: &[f32], grid_w: u3
   let prev_dens_grid = &mut prev_dens_grid[..];
 
   // Swap binding in preparation for the next swap
-  let (prev_dens_grid, dens_grid) = (dens_grid, prev_dens_grid);
+  //let (prev_dens_grid, dens_grid) = (dens_grid, prev_dens_grid);
 
   // Process diffusion
   diffuse(dens_grid, prev_dens_grid, grid_w, dt, diff, borders, 0);
 
   // Swap bindings, b/c we just updates dens_grid and advect() needs to use
   // that for the previous grid
-  let (prev_dens_grid, dens_grid) = (dens_grid, prev_dens_grid);
+  //let (prev_dens_grid, dens_grid) = (dens_grid, prev_dens_grid);
 
   // Process velocity of particles
   advect(dens_grid, prev_dens_grid, vx_grid, vy_grid, grid_w, dt, borders, 0);
@@ -184,8 +185,8 @@ fn step_vel(vx_grid: &mut [f32], vy_grid: &mut [f32], grid_w: u32, dt: f32, diff
   let (prev_vy_grid, vy_grid) = (vy_grid, prev_vy_grid);
 
   // Diffuse just like with density but with velocity instead
-  diffuse(vx_grid, prev_vx_grid, grid_w, dt, diff, borders, 1);
-  diffuse(vy_grid, prev_vy_grid, grid_w, dt, diff, borders, 2);
+  //diffuse(vx_grid, prev_vx_grid, grid_w, dt, diff, borders, 1);
+  //diffuse(vy_grid, prev_vy_grid, grid_w, dt, diff, borders, 2);
   project(vx_grid, vy_grid, prev_vx_grid, prev_vy_grid, grid_w, borders);
 
   let (prev_vx_grid, vx_grid) = (vx_grid, prev_vx_grid);

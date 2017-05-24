@@ -80,6 +80,9 @@ fn main() {
   // Create texture data buffer for fluid
 
   let (mut prev_mx, mut prev_my) = (0, 0);
+  // 4 tuple, ABXY, AB for position and XY for velocity. Every frame the
+  //   velocity cell this correcponds to gets set to XY.
+  let mut curr_vel = (0, 0, 0.0, 0.0);
   loop {
     // listing the events produced by the window and waiting to be received
     for ev in display.poll_events() {
@@ -93,8 +96,14 @@ fn main() {
           if ix >= tex_data.len() { continue; }
           tex_data[x + y*TEX_SIZE] = 1.0;
           if prev_mx != 0 && prev_my != 0 {
-            vx_grid[x + y*TEX_SIZE] = (x as f32 - prev_mx as f32)*2000.0;
-            vy_grid[x + y*TEX_SIZE] = (y as f32 - prev_my as f32)*2000.0;
+            curr_vel.0 = x;
+            curr_vel.1 = y;
+            let x_dis = x as f32 - prev_mx as f32;
+            let y_dis = y as f32 - prev_my as f32;
+            curr_vel.2 = if x_dis == 0.0 { curr_vel.2 } else {x_dis*5.0};
+            curr_vel.3 = if y_dis == 0.0 { curr_vel.3 } else {y_dis*5.0};
+            vx_grid[curr_vel.0 + curr_vel.1*TEX_SIZE] = curr_vel.2;
+            vy_grid[curr_vel.0 + curr_vel.1*TEX_SIZE] = curr_vel.3;
           }
           prev_mx = x;
           prev_my = y;
@@ -104,7 +113,9 @@ fn main() {
     }
 
     // Process fluids
-    fluid::step_fluid(&mut tex_data[..], &mut vx_grid[..], &mut vy_grid[..], TEX_SIZE as u32, 0.016, 0.0001, true);
+    vx_grid[curr_vel.0 + curr_vel.1*TEX_SIZE] = curr_vel.2;
+    vy_grid[curr_vel.0 + curr_vel.1*TEX_SIZE] = curr_vel.3;
+    fluid::step_fluid(&mut tex_data[..], &mut vx_grid[..], &mut vy_grid[..], TEX_SIZE as u32, 0.16, 0.0, true);
 
     // Re buffer texture
     use std::borrow::Cow;
@@ -129,12 +140,12 @@ fn main() {
       tex: texture.sampled()
         .wrap_function(glium::uniforms::SamplerWrapFunction::Clamp)
         .magnify_filter(glium::uniforms::MagnifySamplerFilter::Linear),
-      tex1: texture1.sampled()
-        .wrap_function(glium::uniforms::SamplerWrapFunction::Clamp)
-        .magnify_filter(glium::uniforms::MagnifySamplerFilter::Linear),
-      tex2: texture2.sampled()
-        .wrap_function(glium::uniforms::SamplerWrapFunction::Clamp)
-        .magnify_filter(glium::uniforms::MagnifySamplerFilter::Linear)
+        tex1: texture1.sampled()
+          .wrap_function(glium::uniforms::SamplerWrapFunction::Clamp)
+          .magnify_filter(glium::uniforms::MagnifySamplerFilter::Linear),
+          tex2: texture2.sampled()
+            .wrap_function(glium::uniforms::SamplerWrapFunction::Clamp)
+            .magnify_filter(glium::uniforms::MagnifySamplerFilter::Linear)
     };
 
     // Draw
